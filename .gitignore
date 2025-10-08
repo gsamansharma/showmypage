@@ -1,5 +1,4 @@
 .env
 
-# Diff and SQL backup files
-*.diff
+#SQL backup files
 *.sql.gz
