@@ -4,6 +4,6 @@
 [submodule "studio-frontend"]
 	path = studio-frontend
 	url = https://github.com/gsamansharma/showmypage-studio-frontend
-[submodule "studio-backend"]
-	path = studio-backend
-	url = https://github.com/gsamansharma/showmypage-studio-backend
+[submodule "backend"]
+	path = backend
+	url = https://github.com/gsamansharma/showmypage-backend

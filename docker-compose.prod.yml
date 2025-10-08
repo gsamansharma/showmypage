@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8081:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./acme.json:/letsencrypt/acme.json"
+      - "./traefik.yml:/traefik.yml:ro"
+    environment:
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    restart: always
+
+  backend:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`${DOMAIN_API}`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=myresolver"
+      - "traefik.http.services.backend.loadbalancer.server.port=8080"
+
+  frontend:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_MAIN}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+
+  studio-frontend:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.studio-frontend.rule=Host(`${DOMAIN_STUDIO}`)"
+      - "traefik.http.routers.studio-frontend.entrypoints=websecure"
+      - "traefik.http.routers.studio-frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.studio-frontend.loadbalancer.server.port=3000"
+
+  backup:
+    image: prodrigestivill/postgres-backup-local
+    restart: always
+    volumes:
+      - ./backups:/backups
+    links:
+      - db:db
+    depends_on:
+      - db
+    environment:
+      - POSTGRES_HOST=db
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - SCHEDULE=@daily
