@@ -12,9 +12,24 @@ services:
     ports:
       - "5433:5432"
 
-  backend:
+  frontend:
     build:
-      context: ./backend
+      context: ./frontend
+      args:
+        - NEXT_PUBLIC_BACKEND_API_URL=${NEXT_PUBLIC_BACKEND_API_URL}
+        - NEXT_PUBLIC_STUDIO_DOMAIN=${NEXT_PUBLIC_STUDIO_DOMAIN}
+    ports:
+      - "3000:3000"
+    environment:
+      - BACKEND_API_URL=${BACKEND_API_URL}
+      - NEXT_PUBLIC_BACKEND_API_URL=${NEXT_PUBLIC_BACKEND_API_URL}
+      - NEXT_PUBLIC_STUDIO_DOMAIN=${NEXT_PUBLIC_STUDIO_DOMAIN}
+    depends_on:
+      - backend
+
+  studio-backend:
+    build:
+      context: ./studio-backend
     ports:
       - "8080:8080"
     environment:
@@ -36,22 +51,6 @@ services:
       - SPRING_MAIL_PASSWORD=${SPRING_MAIL_PASSWORD}
     depends_on:
       - db
-
-  frontend:
-    build:
-      context: ./frontend
-      args:
-        - NEXT_PUBLIC_BACKEND_API_URL=${NEXT_PUBLIC_BACKEND_API_URL}
-        - NEXT_PUBLIC_STUDIO_DOMAIN=${NEXT_PUBLIC_STUDIO_DOMAIN}
-
-    ports:
-      - "3000:3000"
-    environment:
-      - BACKEND_API_URL=${BACKEND_API_URL}
-      - NEXT_PUBLIC_BACKEND_API_URL=${NEXT_PUBLIC_BACKEND_API_URL}
-      - NEXT_PUBLIC_STUDIO_DOMAIN=${NEXT_PUBLIC_STUDIO_DOMAIN}
-    depends_on:
-      - backend
 
   studio-frontend:
     build:

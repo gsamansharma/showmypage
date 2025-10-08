@@ -1,9 +1,9 @@
 [submodule "frontend"]
 	path = frontend
-	url = https://github.com/gsamansharma/portfolio
-[submodule "backend"]
-	path = backend
-	url = https://github.com/gsamansharma/show-my-page
+	url = https://github.com/gsamansharma/showmypage-frontend
 [submodule "studio-frontend"]
 	path = studio-frontend
-	url = https://github.com/gsamansharma/showmypage-studio
+	url = https://github.com/gsamansharma/showmypage-studio-frontend
+[submodule "studio-backend"]
+	path = studio-backend
+	url = https://github.com/gsamansharma/showmypage-studio-backend
