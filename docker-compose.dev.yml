@@ -18,13 +18,9 @@ services:
   frontend:
     ports:
       - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
 
   studio-frontend:
     ports:
       - "3001:3000"
     volumes:
-      - ./studio-frontend:/app
-      - /app/node_modules
+      - ./studio-frontend:/app/src

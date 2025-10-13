@@ -13,6 +13,10 @@ providers:
   docker:
     exposedByDefault: false
 
+api:
+  insecure: true
+  dashboard: true
+
 certificatesResolvers:
   myresolver:
     acme:
