@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./traefik.yml:/etc/traefik/traefik.yml:ro"
+
+  backend:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.localhost`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.services.backend.loadbalancer.server.port=8080"
+
+  frontend:
+    environment:
+      - NEXT_PUBLIC_ROOT_DOMAIN=localhost
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=HostRegexp(`{subdomain:[a-z]+}.localhost`, `localhost`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+
+  studio-frontend:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.studio-frontend.rule=Host(`studio.localhost`)"
+      - "traefik.http.routers.studio-frontend.entrypoints=web"
+      - "traefik.http.services.studio-frontend.loadbalancer.server.port=3000"
