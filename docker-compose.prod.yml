@@ -6,11 +6,18 @@ services:
     container_name: "traefik"
     command:
       - "--api.insecure=true"
+      - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.myresolver.acme.dnschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.myresolver.acme.email=${LETSENCRYPT_EMAIL}"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+
     ports:
       - "80:80"
       - "443:443"
@@ -20,32 +27,37 @@ services:
       - "./acme.json:/letsencrypt/acme.json"
       - "./traefik.yml:/traefik.yml:ro"
     environment:
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+      - CF_API_EMAIL=${CFI_API_EMAIL}
+      - CF_API_KEY=${CF_API_KEY}
     restart: always
 
   backend:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=Host(`${DOMAIN_API}`)"
+      - "traefik.http.routers.backend.priority=10"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=myresolver"
       - "traefik.http.services.backend.loadbalancer.server.port=8080"
-
-  frontend:
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.frontend.rule=Host(`${DOMAIN_MAIN}`)"
-      - "traefik.http.routers.frontend.entrypoints=websecure"
-      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
-      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
 
   studio-frontend:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.studio-frontend.rule=Host(`${DOMAIN_STUDIO}`)"
+      - "traefik.http.routers.studio-frontend.priority=10"
       - "traefik.http.routers.studio-frontend.entrypoints=websecure"
       - "traefik.http.routers.studio-frontend.tls.certresolver=myresolver"
       - "traefik.http.services.studio-frontend.loadbalancer.server.port=3000"
+
+  frontend:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=HostRegexp(`{subdomain:.+}.${DOMAIN_MAIN}`, `${DOMAIN_MAIN}`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.routers.frontend.tls.domains[0].main=${DOMAIN_MAIN}"
+      - "traefik.http.routers.frontend.tls.domains[0].sans=*.${DOMAIN_MAIN}"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
 
   backup:
     image: prodrigestivill/postgres-backup-local

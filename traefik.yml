@@ -12,6 +12,7 @@ entryPoints:
 providers:
   docker:
     exposedByDefault: false
+    network: web
 
 api:
   insecure: true
@@ -20,7 +21,5 @@ api:
 certificatesResolvers:
   myresolver:
     acme:
-      email: "${LETSENCRYPT_EMAIL}" 
-      storage: "acme.json"
-      httpChallenge:
-        entryPoint: web
+      dnsChallenge:
+        provider: cloudflare

@@ -2,3 +2,6 @@
 
 #SQL backup files
 *.sql.gz
+
+# ACME (Let's Encrypt) files
+acme.json
