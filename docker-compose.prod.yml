@@ -53,6 +53,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=HostRegexp(`{subdomain:.+}.${DOMAIN_MAIN}`, `${DOMAIN_MAIN}`)"
+      - "traefik.http.routers.frontend.priority=5"
       - "traefik.http.routers.frontend.entrypoints=websecure"
       - "traefik.http.routers.frontend.tls.certresolver=myresolver"
       - "traefik.http.routers.frontend.tls.domains[0].main=${DOMAIN_MAIN}"
