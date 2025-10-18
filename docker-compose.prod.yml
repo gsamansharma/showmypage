@@ -5,8 +5,7 @@ services:
     image: "traefik:v2.10"
     container_name: "traefik"
     command:
-      - "--api.insecure=true"
-      - "--api.dashboard=true"
+      - "--api=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
@@ -21,7 +20,6 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "8081:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./acme.json:/letsencrypt/acme.json"
@@ -30,6 +28,14 @@ services:
       - CF_API_EMAIL=${CFI_API_EMAIL}
       - CF_API_KEY=${CF_API_KEY}
     restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`${TRAEFIK_HOST}`)"
+      - "traefik.http.routers.traefik-dashboard.entrypoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.tls.certresolver=myresolver"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH_USER}"
+      - "traefik.http.routers.traefik-dashboard.middlewares=auth"
 
   backend:
     labels:
