@@ -65,8 +65,6 @@ services:
     restart: always
     volumes:
       - ./backups:/backups
-    links:
-      - db:db
     depends_on:
       - db
     environment:
@@ -75,3 +73,6 @@ services:
       - POSTGRES_USER=${DB_USERNAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - SCHEDULE=@daily
+      - BACKUP_KEEP_DAYS=7
+      - BACKUP_KEEP_WEEKS=4
+      - BACKUP_KEEP_MONTHS=6
